@@ -1,6 +1,6 @@
 import pygame, sys, time
 from settings import *
-from spritegroups import Background, Dirt, Plane, Obstacle, Plane2
+from spritegroups import Background, Dirt, Plane, Mountain_Obstacle, Plane2
 
 
 class TappyJet:

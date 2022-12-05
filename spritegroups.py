@@ -199,3 +199,46 @@ class Plane2(pygame.sprite.Sprite):
         self.animate(delta_time)
         self.rotate()
 
+class Mountain_Obstacle(pygame.sprite.Sprite):
+    def __init__(self, groups, scale_factor):
+        super().__init__(groups)
+        self.sprite_type = 'obstacle'
+
+        # need to pick random looking obstacles, looking down or looking up, therefore we must randomly allocate
+        # the orientation, thus importing choice('up','down') from random
+        orientation = choice(('up', 'down'))
+        surf = pygame.image.load(f'graphics/obstacles/{choice((0, 1))}.png').convert_alpha()
+        self.image = pygame.transform.scale(surf, pygame.math.Vector2(surf.get_size()) * scale_factor)
+
+        x = WINDOW_WIDTH + randint(40, 100)
+        # our x position for facing up mountains and facing down mountains
+        # getting width of window and adding a little offset to make the mountains seem more organic
+        # Taron Madison helped me figure out how to add the offset to the mountains using randint
+
+        # if the mountain is facing upwards
+        if orientation == 'up':
+            y = WINDOW_HEIGHT + randint(10, 50)
+            # window height with the offset of a random amount
+            self.rect = self.image.get_rect(midbottom=(x, y)) # places at bottom of window
+            # need separate rectangles for up and down
+        else:
+            y = randint(-50, -10)
+            # 0 is the top of the window, y can just be the offset, but we dont need the 0
+            self.image = pygame.transform.flip(self.image, False, True)
+            # transform.flip flips the image with a horizontal and vertical flip, and we only want a vertical flip(True)
+            self.rect = self.image.get_rect(midtop=(x, y)) # places at top of window
+            # need separate rectangles for up and down
+
+        self.pos = pygame.math.Vector2(self.rect.topleft)
+
+
+        # mask
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self, delta_time):
+        self.pos.x -= 400 * delta_time
+        self.rect.x = round(self.pos.x)
+        if self.rect.right <= -100:
+            self.kill()
+
+# Taron Madison helped me edit my Github README file
