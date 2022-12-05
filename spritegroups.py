@@ -113,6 +113,33 @@ class Plane(pygame.sprite.Sprite):
             scaled_surface = pygame.transform.scale(surf, pygame.math.Vector2(surf.get_size()) * scale_factor)
             self.frames.append(scaled_surface)
 
+    # gravity is not linear, the longer you fall, the faster you fall, and so we must model this
+    def apply_gravity(self, delta_time):
+        self.direction += self.gravity * delta_time
+        self.pos.y += self.direction * delta_time
+        self.rect.y = round(self.pos.y)
+
+    # this depends on the direction, up or down
+    def jump(self):
+        self.jump_sound.play()
+        self.direction = -400
+
+    def animate(self, delta_time):
+        self.frame_index += 10 * delta_time
+        if self.frame_index >= len(self.frames):
+            self.frame_index = 0
+        self.image = self.frames[int(self.frame_index)]
+
+    def rotate(self):
+        rotated_plane = pygame.transform.rotozoom(self.image, -self.direction * 0.06, 1)
+        self.image = rotated_plane
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self, delta_time):
+        self.apply_gravity(delta_time)
+        self.animate(delta_time)
+        self.rotate()
+
 
 # everything is the same as Plane, except that the image changes from blue to yellow
 class Plane2(pygame.sprite.Sprite):
@@ -147,5 +174,28 @@ class Plane2(pygame.sprite.Sprite):
             # scaling the plane
             scaled_surface = pygame.transform.scale(surf, pygame.math.Vector2(surf.get_size()) * scale_factor)
             self.frames.append(scaled_surface)
+    def apply_gravity(self, delta_time):
+        self.direction += self.gravity * delta_time
+        self.pos.y += self.direction * delta_time
+        self.rect.y = round(self.pos.y)
 
+    def jump(self):
+        self.jump_sound.play()
+        self.direction = -400
+
+    def animate(self, delta_time):
+        self.frame_index += 10 * delta_time
+        if self.frame_index >= len(self.frames):
+            self.frame_index = 0
+        self.image = self.frames[int(self.frame_index)]
+
+    def rotate(self):
+        rotated_plane = pygame.transform.rotozoom(self.image, -self.direction * 0.06, 1)
+        self.image = rotated_plane
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self, delta_time):
+        self.apply_gravity(delta_time)
+        self.animate(delta_time)
+        self.rotate()
 
