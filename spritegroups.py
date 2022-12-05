@@ -31,6 +31,7 @@ class Background(pygame.sprite.Sprite):
         # and into a black screen as delta time continuously keeps the background image moving to the right
 
         # creating the image and placing it in the topleft of the window
+        # Jordan Quiles helped me understand the topleft, midbottom, etc attributes and how to use them
         self.rect = self.image.get_rect(topleft=(0, 0))
         # get a vector at position (0,0)
         self.pos = pygame.math.Vector2(self.rect.topleft)
@@ -106,6 +107,7 @@ class Plane(pygame.sprite.Sprite):
         self.jump_sound = pygame.mixer.Sound('sounds/sounds_jump.wav')
         self.jump_sound.set_volume(0.3)
 
+    # adding plane image
     def import_frames(self, scale_factor):
         self.frames = []
         for i in range(3):
@@ -124,16 +126,25 @@ class Plane(pygame.sprite.Sprite):
         self.jump_sound.play()
         self.direction = -400
 
+    # starting out with a surface, it increases very slowly on the frame by a small number, frame index
+    # takes next number
     def animate(self, delta_time):
         self.frame_index += 10 * delta_time
         if self.frame_index >= len(self.frames):
             self.frame_index = 0
         self.image = self.frames[int(self.frame_index)]
 
+    # works on rotation of plane, rotozoom is a python method that helps with this!!
+    # the faster we are falling down, the more we will fall down clockwise, and if up, counterclockwise
     def rotate(self):
         rotated_plane = pygame.transform.rotozoom(self.image, -self.direction * 0.06, 1)
+        # setting the rotation relative to the direction
+        # self direction was too high, so we have to reduce it
         self.image = rotated_plane
         self.mask = pygame.mask.from_surface(self.image)
+
+# the order of jump, animate, and rotate is extremely important. when we animate, it creates a new image, and so rotate
+# must be after animate in order to show up
 
     def update(self, delta_time):
         self.apply_gravity(delta_time)
@@ -142,6 +153,7 @@ class Plane(pygame.sprite.Sprite):
 
 
 # everything is the same as Plane, except that the image changes from blue to yellow
+# Jordan Quiles helped me how to put in the second plane to make it multi-player
 class Plane2(pygame.sprite.Sprite):
     def __init__(self, groups, scale_factor):
         super().__init__(groups)
@@ -152,17 +164,22 @@ class Plane2(pygame.sprite.Sprite):
         self.image = self.frames[self.frame_index]
 
         # rect
+        # placing the planes position, adjusting the coordinates so that it is in the
+        # center of window height, for x posn, dividing width by 20 because the window width
+        # is 480/20 = 24
         self.rect = self.image.get_rect(midleft=(WINDOW_WIDTH / 20, WINDOW_HEIGHT / 2))
         self.pos = pygame.math.Vector2(self.rect.topleft)
 
         # movement
         self.gravity = 600
         self.direction = 0
+        # we need direction because our plane can go up or down
 
         # mask
         self.mask = pygame.mask.from_surface(self.image)
 
-        # sound
+        # # this calls the jump sound and sets how loud it will be
+        # Kam Summers helped me find a sound to add to my background music
         self.jump_sound = pygame.mixer.Sound('sounds/sounds_jump.wav')
         self.jump_sound.set_volume(0.3)
 
@@ -174,14 +191,21 @@ class Plane2(pygame.sprite.Sprite):
             # scaling the plane
             scaled_surface = pygame.transform.scale(surf, pygame.math.Vector2(surf.get_size()) * scale_factor)
             self.frames.append(scaled_surface)
+
+    # gravity is not linear, the longer you fall, the faster you fall, and so we must model this
     def apply_gravity(self, delta_time):
         self.direction += self.gravity * delta_time
         self.pos.y += self.direction * delta_time
         self.rect.y = round(self.pos.y)
 
+        # this depends on the direction, up or down
+
     def jump(self):
         self.jump_sound.play()
         self.direction = -400
+
+        # starting out with a surface, it increases very slowly on the frame by a small number, frame index
+        # takes next number
 
     def animate(self, delta_time):
         self.frame_index += 10 * delta_time
@@ -189,20 +213,26 @@ class Plane2(pygame.sprite.Sprite):
             self.frame_index = 0
         self.image = self.frames[int(self.frame_index)]
 
+    # works on rotation of plane, rotozoom is a python method that helps with this!!
+    # the faster we are falling down, the more we will fall down clockwise, and if up, counterclockwise
     def rotate(self):
         rotated_plane = pygame.transform.rotozoom(self.image, -self.direction * 0.06, 1)
         self.image = rotated_plane
         self.mask = pygame.mask.from_surface(self.image)
+
+    # the order of jump, animate, and rotate is extremely important. when we animate, it creates a new image, and so rotate
+    # must be after animate in order to show up
 
     def update(self, delta_time):
         self.apply_gravity(delta_time)
         self.animate(delta_time)
         self.rotate()
 
+
 class Mountain_Obstacle(pygame.sprite.Sprite):
     def __init__(self, groups, scale_factor):
         super().__init__(groups)
-        self.sprite_type = 'obstacle'
+        self.sprite_type = 'Mountain_Obstacle'
 
         # need to pick random looking obstacles, looking down or looking up, therefore we must randomly allocate
         # the orientation, thus importing choice('up','down') from random
